@@ -12,7 +12,6 @@
             min-height: 100vh;
         }
         
-        /* Navbar */
         .navbar {
             background: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -74,7 +73,6 @@
             color: #667eea;
         }
         
-        /* Main Content */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -105,10 +103,6 @@
             font-weight: bold;
             margin: 10px 0;
         }
-        .welcome-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            margin-bottom: 30px;
-        }
         .btn {
             padding: 10px 20px;
             border: none;
@@ -132,8 +126,8 @@
             border-radius: 10px;
             border-left: 4px solid #667eea;
         }
-        .badge-pass { background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
-        .badge-fail { background: #ef4444; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+        .badge-pass { background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .badge-fail { background: #ef4444; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
         .confidence-bar {
             background: #e5e7eb;
             border-radius: 10px;
@@ -170,7 +164,7 @@
     </nav>
 
     <div class="container">
-        <div class="card welcome-card">
+        <div class="card">
             <h1>Welcome, <span id="welcomeName">User</span>! 👋</h1>
             <p>Your AI-powered message verification dashboard</p>
         </div>
@@ -221,61 +215,70 @@
             window.location.href = 'login.html';
         }
         
-        function loadMessages() {
-            const history = localStorage.getItem('messageHistory');
-            let messages = history ? JSON.parse(history) : [];
-            
-            // Filter messages for current user (in real app, would be per user)
-            // For now, using all messages
-            
-            const total = messages.length;
-            const verified = messages.filter(m => m.passed).length;
-            const rejected = total - verified;
-            const accuracy = total > 0 ? Math.round((verified / total) * 100) : 0;
-            
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('verifiedCount').textContent = verified;
-            document.getElementById('rejectedCount').textContent = rejected;
-            document.getElementById('accuracy').textContent = accuracy + '%';
-            
-            const messageList = document.getElementById('messageList');
-            
-            if (messages.length === 0) {
-                messageList.innerHTML = `
-                    <div class="empty-state">
-                        <p>📭 No messages yet</p>
-                        <p style="margin-top: 10px;">Create your first message to get started!</p>
-                        <button class="btn btn-primary" onclick="location.href='submit-message.html'" style="margin-top: 15px;">Create Message</button>
-                    </div>
-                `;
-                return;
-            }
-            
-            messageList.innerHTML = messages.slice(0, 10).map(msg => `
-                <div class="message-item">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <span class="${msg.passed ? 'badge-pass' : 'badge-fail'}">
-                                ${msg.passed ? '✓ Verified' : '✗ Rejected'}
-                            </span>
-                            <span style="font-size: 12px; color: #666; margin-left: 10px;">
-                                ${new Date(msg.date).toLocaleString()}
-                            </span>
-                            <div style="margin: 10px 0; font-weight: 500;">"${msg.message.substring(0, 100)}${msg.message.length > 100 ? '...' : ''}"</div>
-                            <div style="font-size: 13px; color: #555;">
-                                🤖 Confidence: <strong>${Math.round(msg.confidence)}%</strong>
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${window.API_URL}/api/messages`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const messages = data.messages || [];
+                    const total = messages.length;
+                    const verified = messages.filter(m => m.passed).length;
+                    const rejected = total - verified;
+                    const accuracy = total > 0 ? Math.round((verified / total) * 100) : 0;
+                    
+                    document.getElementById('totalCount').textContent = total;
+                    document.getElementById('verifiedCount').textContent = verified;
+                    document.getElementById('rejectedCount').textContent = rejected;
+                    document.getElementById('accuracy').textContent = accuracy + '%';
+                    
+                    const messageList = document.getElementById('messageList');
+                    
+                    if (messages.length === 0) {
+                        messageList.innerHTML = `
+                            <div class="empty-state">
+                                <p>📭 No messages yet</p>
+                                <p style="margin-top: 10px;">Create your first message to get started!</p>
+                                <button class="btn btn-primary" onclick="location.href='submit-message.html'" style="margin-top: 15px;">Create Message</button>
                             </div>
-                            <div class="confidence-bar">
-                                <div class="confidence-fill" style="width: ${msg.confidence}%;"></div>
+                        `;
+                        return;
+                    }
+                    
+                    messageList.innerHTML = messages.slice(0, 10).map(msg => `
+                        <div class="message-item">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <span class="${msg.passed ? 'badge-pass' : 'badge-fail'}">
+                                        ${msg.passed ? '✓ Verified' : '✗ Rejected'}
+                                    </span>
+                                    <span style="font-size: 12px; color: #666; margin-left: 10px;">
+                                        ${new Date(msg.created_at || msg.date).toLocaleString()}
+                                    </span>
+                                    <div style="margin: 10px 0; font-weight: 500;">"${(msg.content || msg.message).substring(0, 100)}${(msg.content || msg.message).length > 100 ? '...' : ''}"</div>
+                                    <div style="font-size: 13px; color: #555;">
+                                        🤖 Confidence: <strong>${Math.round(msg.confidence)}%</strong>
+                                    </div>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: ${msg.confidence}%;"></div>
+                                    </div>
+                                    ${msg.explanation ? `<div style="margin-top: 8px; font-size: 12px; color: #666;">💡 ${msg.explanation}</div>` : ''}
+                                </div>
                             </div>
-                            ${msg.explanation ? `<div style="margin-top: 8px; font-size: 12px; color: #666;">💡 ${msg.explanation}</div>` : ''}
                         </div>
-                    </div>
-                </div>
-            `).join('');
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                document.getElementById('messageList').innerHTML = '<div class="empty-state"><p>❌ Error loading messages. Please try again.</p></div>';
+            }
         }
         
         loadMessages();
     </script>
+    <script src="config.js"></script>
 </body>
 </html>
