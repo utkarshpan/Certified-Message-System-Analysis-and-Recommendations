@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Message | Certified Message System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: floatParticle 15s infinite;
+        }
+
+        @keyframes floatParticle {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            50% { transform: translateY(-100px) translateX(50px); opacity: 0.8; }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Main Card */
+        .message-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .header-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .card-header h1 {
+            font-size: 36px;
+            color: white;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Body */
+        .card-body {
+            padding: 40px;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-label i {
+            color: #667eea;
+            margin-right: 8px;
+        }
+
+        /* Message Input */
+        .message-input {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .char-counter span {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* Category Select */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .category-option {
+            cursor: pointer;
+            padding: 15px;
+            text-align: center;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+
+        .category-option:hover {
+            transform: translateY(-3px);
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .category-option.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .category-option.selected .category-icon {
+            color: white;
+        }
+
+        .category-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Tips Section */
+        .tips-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tips-section::before {
+            content: '💡';
+            position: absolute;
+            right: -10px;
+            top: -10px;
+            font-size: 80px;
+            opacity: 0.1;
+        }
+
+        .tips-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tips-list {
+            list-style: none;
+        }
+
+        .tips-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .tips-list li i {
+            color: #10b981;
+            font-size: 12px;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card-header h1 { font-size: 24px; }
+            .card-body { padding: 25px; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
+            .button-group { flex-direction: column; }
+            .btn { padding: 14px; }
+        }
+
+        /* Floating Animation */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="message-card">
+            <div class="card-header">
+                <div class="header-icon">✍️</div>
+                <h1>Create New Message</h1>
+                <p>Write your message and let our AI verify it</p>
+            </div>
+            <div class="card-body">
+                <form id="messageForm">
+                    <!-- Message Input -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-comment"></i> Your Message
+                        </label>
+                        <div class="message-input">
+                            <textarea 
+                                id="messageContent" 
+                                rows="6" 
+                                placeholder="Example: Heavy rain expected in Mumbai at 6 PM today"
+                                maxlength="500"
+                            ></textarea>
+                            <div class="char-counter">
+                                <span id="charCount">0</span> / 500 characters
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Selection -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-tag"></i> Message Category
+                        </label>
+                        <div class="category-grid">
+                            <div class="category-option" data-category="weather">
+                                <span class="category-icon">🌤️</span>
+                                <div class="category-name">Weather</div>
+                            </div>
+                            <div class="category-option" data-category="news">
+                                <span class="category-icon">📰</span>
+                                <div class="category-name">News</div>
+                            </div>
+                            <div class="category-option" data-category="alert">
+                                <span class="category-icon">⚠️</span>
+                                <div class="category-name">Alert</div>
+                            </div>
+                            <div class="category-option" data-category="general">
+                                <span class="category-icon">💬</span>
+                                <div class="category-name">General</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="messageCategory" value="">
+                    </div>
+
+                    <!-- Tips Section -->
+                    <div class="tips-section">
+                        <div class="tips-title">
+                            <i class="fas fa-lightbulb"></i> Pro Tips for Better Validation
+                        </div>
+                        <ul class="tips-list">
+                            <li><i class="fas fa-check-circle"></i> Include specific location (e.g., Mumbai, Delhi)</li>
+                            <li><i class="fas fa-check-circle"></i> Add exact time (e.g., 6 PM, tomorrow morning)</li>
+                            <li><i class="fas fa-check-circle"></i> Use keywords like rain, storm, flood, alert</li>
+                            <li><i class="fas fa-check-circle"></i> Keep message clear and concise</li>
+                            <li><i class="fas fa-check-circle"></i> Avoid sensational language</li>
+                        </ul>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="button-group">
+                        <button type="submit" id="submitBtn" class="btn btn-primary">
+                            <i class="fas fa-robot"></i> Analyze with AI
+                        </button>
+                        <button type="button" onclick="location.href='dashboard.html'" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create animated particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 50 + 20;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = Math.random() * 10 + 10 + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Character counter
+        const textarea = document.getElementById('messageContent');
+        const charCount = document.getElementById('charCount');
+        
+        textarea.addEventListener('input', () => {
+            charCount.textContent = textarea.value.length;
+        });
+
+        // Category selection
+        let selectedCategory = '';
+        const categoryOptions = document.querySelectorAll('.category-option');
+        
+        categoryOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all
+                categoryOptions.forEach(opt => opt.classList.remove('selected'));
+                // Add selected class to clicked
+                this.classList.add('selected');
+                // Store selected category
+                selectedCategory = this.dataset.category;
+                document.getElementById('messageCategory').value = selectedCategory;
+            });
+        });
+
+        // Form submission
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = textarea.value.trim();
+            const category = document.getElementById('messageCategory').value;
+            
+            // Validation
+            if (!message) {
+                showError('Please enter a message');
+                textarea.style.borderColor = '#ef4444';
+                setTimeout(() => textarea.style.borderColor = '#e0e0e0', 2000);
+                return;
+            }
+            
+            if (!category) {
+                showError('Please select a category');
+                return;
+            }
+            
+            if (message.length < 10) {
+                showError('Message is too short. Please provide more details');
+                return;
+            }
+            
+            // Store in localStorage
+            localStorage.setItem('message', message);
+            localStorage.setItem('category', category);
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Analyzing...';
+            submitBtn.disabled = true;
+            
+            // Navigate to validation page
+            setTimeout(() => {
+                window.location.href = 'validation-result.html';
+            }, 500);
+        });
+        
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #ef4444;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 10px;
+                animation: slideIn 0.3s ease-out;
+                z-index: 1000;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            `;
+            errorDiv.innerHTML = `⚠️ ${message}`;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 3000);
+        }
+        
+        // Add slideIn animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+        
+        // Load saved message if any (optional)
+        const savedMessage = localStorage.getItem('message');
+        if (savedMessage && !textarea.value) {
+            textarea.value = savedMessage;
+            charCount.textContent = savedMessage.length;
+        }
+    </script>
+</body>
+</html>

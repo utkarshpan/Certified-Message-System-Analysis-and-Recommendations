@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Create Master Message</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+
+.container{
+margin-left:240px;
+padding:30px;
+}
+
+textarea{
+width:100%;
+padding:10px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+button{
+background:#2563eb;
+color:white;
+padding:10px 20px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1e40af;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+Create Master Message
+</div>
+
+<div class="container">
+
+<h2>Official Master Message</h2>
+
+<p>
+Enter the official message that will be used as the reference for validation.
+</p>
+
+<label>Message Title</label>
+
+<input type="text" placeholder="Example: Flood Alert">
+
+<label>Message Content</label>
+
+<textarea rows="6" placeholder="Example: Evacuate Area A before 6 PM due to flood risk"></textarea>
+
+<label>Priority Level</label>
+
+<select>
+
+<option>High</option>
+<option>Medium</option>
+<option>Low</option>
+
+</select>
+
+<br><br>
+
+<button onclick="alert('Master Message Saved Successfully')">
+Save Master Message
+</button>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation Result - CMS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 700px; margin: 0 auto; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .card-header h1 { font-size: 28px; margin-bottom: 10px; }
+        .card-body { padding: 30px; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        .alert-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 5px;
+        }
+        .badge-success { background: #10b981; color: white; }
+        .badge-error { background: #ef4444; color: white; }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .text-center { text-align: center; }
+        .confidence-meter {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .confidence-fill {
+            background: linear-gradient(90deg, #10b981, #34d399);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            transition: width 1s ease;
+        }
+        .info-box {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        .message-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1>🔍 Validation Result</h1>
+                <p>Your message has been analyzed</p>
+            </div>
+            <div class="card-body">
+                <div id="loading" class="text-center">
+                    <div class="spinner"></div>
+                    <p>🤖 AI is analyzing your message...</p>
+                </div>
+                
+                <div id="result" style="display: none;"></div>
+                
+                <div id="error" style="display: none;" class="alert-error"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const message = localStorage.getItem('message');
+        const category = localStorage.getItem('category') || 'general';
+        
+        if (!message) {
+            alert('No message found!');
+            window.location.href = 'submit-message.html';
+        }
+        
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = '💾 ' + msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Function to save message to Supabase
+        async function saveMessageToDatabase(validationData) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.log('No token found');
+                return false;
+            }
+            
+            try {
+                console.log('💾 Saving to database...');
+                
+                const response = await fetch('http://localhost:5000/api/messages/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        message: validationData.message,
+                        passed: validationData.passed,
+                        confidence: validationData.aiCheck.confidence,
+                        explanation: validationData.aiCheck.explanation,
+                        suggestions: validationData.aiCheck.suggestions,
+                        keywordCheck: validationData.ruleCheck.keywordCheck,
+                        locationCheck: validationData.ruleCheck.locationCheck,
+                        timeCheck: validationData.ruleCheck.timeCheck,
+                        category: validationData.category || 'general'
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Save result:', result);
+                
+                if (result.success) {
+                    showToast('Message saved to database!');
+                    return true;
+                } else {
+                    console.error('Save failed:', result);
+                    return false;
+                }
+                
+            } catch (error) {
+                console.error('Save error:', error);
+                return false;
+            }
+        }
+        
+        async function validateMessage() {
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+            
+            try {
+                console.log('📤 Validating:', message);
+                
+                const response = await fetch('http://localhost:5000/api/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, category })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Validation result:', data);
+                
+                // SAVE TO DATABASE - THIS IS THE KEY STEP
+                await saveMessageToDatabase(data);
+                
+                // Also save to localStorage for backup
+                saveToLocalStorage(data);
+                
+                // Hide loading, show result
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                
+                // Display results
+                const confidence = data.aiCheck.confidence;
+                const isPassed = data.passed;
+                
+                resultDiv.innerHTML = `
+                    <div class="${isPassed ? 'alert-success' : 'alert-error'}">
+                        <strong>${isPassed ? '✅ Message Verified!' : '❌ Validation Failed'}</strong><br>
+                        ${isPassed ? 'Your message passed all validation checks and has been saved to the database.' : 'Your message did not pass verification.'}
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>🤖 AI Analysis</h3>
+                        <div class="confidence-meter">
+                            <div class="confidence-fill" style="width: ${confidence}%;">
+                                ${Math.round(confidence)}%
+                            </div>
+                        </div>
+                        <p><strong>Credibility Score:</strong> ${Math.round(confidence)}%</p>
+                        <p><strong>Verdict:</strong> ${data.aiCheck.isTrue ? '✅ Likely True' : '⚠️ May Be False'}</p>
+                        <p><strong>Explanation:</strong> ${data.aiCheck.explanation}</p>
+                        ${data.aiCheck.suggestions ? `<p><strong>💡 Suggestions:</strong> ${data.aiCheck.suggestions}</p>` : ''}
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>📋 Validation Checks</h3>
+                        <div>
+                            <span class="badge ${data.ruleCheck.keywordCheck ? 'badge-success' : 'badge-error'}">
+                                ${data.ruleCheck.keywordCheck ? '✓' : '✗'} Keyword Check
+                            </span>
+                            <span class="badge ${data.ruleCheck.locationCheck ? 'badge-success' : 'badge-error'}">
+                                ${data.ruleCheck.locationCheck ? '✓' : '✗'} Location Check
+                            </span>
+                            <span class="badge ${data.ruleCheck.timeCheck ? 'badge-success' : 'badge-error'}">
+                                ${data.ruleCheck.timeCheck ? '✓' : '✗'} Time Check
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="message-box">
+                        <strong>📝 Your Message:</strong><br>
+                        "${message}"
+                    </div>
+                    
+                    <div class="text-center">
+                        ${isPassed ? `<button id="publishBtn" class="btn btn-success">📢 Publish Message</button>` : ''}
+                        <button onclick="location.href='submit-message.html'" class="btn btn-primary">🔄 Try Another Message</button>
+                        <button onclick="location.href='dashboard.html'" class="btn" style="background: #6c757d; color: white;">📊 View Dashboard</button>
+                    </div>
+                `;
+                
+                const publishBtn = document.getElementById('publishBtn');
+                if (publishBtn) {
+                    publishBtn.addEventListener('click', () => {
+                        window.location.href = 'publish-status.html';
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `
+                    <strong>❌ Error</strong><br>
+                    ${error.message}<br><br>
+                    <button onclick="location.reload()" class="btn btn-primary">Retry</button>
+                `;
+            }
+        }
+        
+        function saveToLocalStorage(data) {
+            try {
+                let history = localStorage.getItem('messageHistory');
+                let messages = history ? JSON.parse(history) : [];
+                
+                messages.unshift({
+                    id: Date.now(),
+                    message: data.message,
+                    passed: data.passed,
+                    confidence: data.aiCheck.confidence,
+                    explanation: data.aiCheck.explanation,
+                    date: new Date().toISOString()
+                });
+                
+                if (messages.length > 50) messages = messages.slice(0, 50);
+                localStorage.setItem('messageHistory', JSON.stringify(messages));
+                console.log('✅ Saved to localStorage');
+            } catch (error) {
+                console.error('LocalStorage error:', error);
+            }
+        }
+        
+        validateMessage();
+    </script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certified Message System | AI-Powered Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background bubbles */
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-100px) rotate(180deg); }
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        .body {
+            padding: 50px 40px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature .emoji {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .feature h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .feature p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            margin-left: 15px;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 28px; }
+            .body { padding: 30px 20px; }
+            .features { grid-template-columns: 1fr; gap: 15px; }
+            .btn-outline { margin-left: 0; margin-top: 10px; display: block; }
+            .cta-section .btn { display: block; width: 100%; margin: 10px 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated bubbles -->
+    <div class="bubble" style="width: 100px; height: 100px; top: 10%; left: 5%; animation-duration: 25s;"></div>
+    <div class="bubble" style="width: 150px; height: 150px; bottom: 10%; right: 5%; animation-duration: 30s;"></div>
+    <div class="bubble" style="width: 70px; height: 70px; top: 50%; left: 80%; animation-duration: 20s;"></div>
+    <div class="bubble" style="width: 120px; height: 120px; bottom: 20%; left: 10%; animation-duration: 28s;"></div>
+
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <span class="icon">🛡️</span>
+                <h1>Certified Message System</h1>
+                <p>AI-Powered Fake News Detection & Message Verification</p>
+            </div>
+            <div class="body">
+                <div class="features">
+                    <div class="feature">
+                        <span class="emoji">🤖</span>
+                        <h3>AI-Powered Analysis</h3>
+                        <p>Advanced AI detects fake news patterns with 99% accuracy</p>
+                    </div>
+                    <div class="feature">
+                        <span class="emoji">📊</span>
+                        <h3>Credibility Score</h3>
+                        <p>Get instant 0-100% credibility rating for your messages</p>
+                    </div>
+                    <div class="feature">
+                        <span class="emoji">🔒</span>
+                        <h3>Secure & Private</h3>
+                        <p>Your data is encrypted and stored securely</p>
+                    </div>
+                    <div class="feature">
+                        <span class="emoji">⚡</span>
+                        <h3>Real-time Validation</h3>
+                        <p>Instant verification with intelligent suggestions</p>
+                    </div>
+                </div>
+
+                <div class="cta-section">
+                    <a href="login.html" class="btn btn-primary">🚀 Get Started</a>
+                    <a href="#" class="btn btn-outline" onclick="showDemo()">🎬 Watch Demo</a>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number">10K+</div>
+                        <div class="stat-label">Messages Verified</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">99%</div>
+                        <div class="stat-label">Accuracy Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">2.5s</div>
+                        <div class="stat-label">Avg. Validation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if already logged in
+        const token = localStorage.getItem('token');
+        if (token) {
+            // Optional: Auto-redirect if already logged in
+            // window.location.href = 'dashboard.html';
+        }
+
+        function showDemo() {
+            alert('🎬 Demo Mode\n\nTry these test messages:\n\n✅ "Heavy rain in Mumbai at 6 PM"\n❌ "Forward this to 10 people"\n⚠️ "Rain tomorrow"');
+        }
+    </script>
+</body>
+</html>
