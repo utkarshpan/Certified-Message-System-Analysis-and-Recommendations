@@ -2,9 +2,7 @@
 // If you're testing on your computer → use localhost
 // If website is live → use your render backend URL
 
-const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000'          // When testing on your computer
-    : 'https://cms-backend-1kyr.onrender.com';  // When website is live
+const API_URL = 'https://cms-backend-1kyr.onrender.com';  // When website is live
 
 // Make it available to all pages
 window.API_URL = API_URL;
