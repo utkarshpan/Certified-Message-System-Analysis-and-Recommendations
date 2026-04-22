@@ -1,7 +1,12 @@
+const db = require('../database');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = 'cms-demo-secret-key-2024';
+
 async function signup(req, res) {
     try {
         const { name, email, password } = req.body;
-        const supabase = req.app.locals.supabase;
         
         console.log('📝 Signup:', email);
         
@@ -13,23 +18,32 @@ async function signup(req, res) {
             return res.status(400).json({ error: 'Password must be at least 6 characters' });
         }
         
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { name } }
-        });
+        const hashedPassword = await bcrypt.hash(password, 10);
         
-        if (authError) throw authError;
-        
-        res.json({
-            success: true,
-            token: authData.session?.access_token,
-            user: {
-                id: authData.user.id,
-                name: name,
-                email: email
+        db.run(
+            `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
+            [name, email, hashedPassword],
+            function(err) {
+                if (err) {
+                    if (err.message.includes('UNIQUE')) {
+                        return res.status(400).json({ error: 'Email already exists' });
+                    }
+                    return res.status(400).json({ error: err.message });
+                }
+                
+                const token = jwt.sign({ id: this.lastID, email, name }, JWT_SECRET, { expiresIn: '7d' });
+                
+                res.json({
+                    success: true,
+                    token,
+                    user: {
+                        id: this.lastID,
+                        name: name,
+                        email: email
+                    }
+                });
             }
-        });
+        );
         
     } catch (error) {
         console.error('Signup error:', error.message);
@@ -40,7 +54,6 @@ async function signup(req, res) {
 async function login(req, res) {
     try {
         const { email, password } = req.body;
-        const supabase = req.app.locals.supabase;
         
         console.log('🔐 Login:', email);
         
@@ -48,20 +61,27 @@ async function login(req, res) {
             return res.status(400).json({ error: 'Email and password required' });
         }
         
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
-        
-        if (error) throw error;
-        
-        res.json({
-            success: true,
-            token: data.session.access_token,
-            user: {
-                id: data.user.id,
-                email: data.user.email
+        db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
+            if (err || !user) {
+                return res.status(400).json({ error: 'Invalid credentials' });
             }
+            
+            const valid = await bcrypt.compare(password, user.password);
+            if (!valid) {
+                return res.status(400).json({ error: 'Invalid credentials' });
+            }
+            
+            const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+            
+            res.json({
+                success: true,
+                token,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email
+                }
+            });
         });
         
     } catch (error) {
@@ -73,17 +93,13 @@ async function login(req, res) {
 async function verifyToken(req, res) {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        const supabase = req.app.locals.supabase;
         
         if (!token) {
             return res.status(401).json({ valid: false });
         }
         
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        
-        if (error) throw error;
-        
-        res.json({ valid: true, user });
+        const decoded = jwt.verify(token, JWT_SECRET);
+        res.json({ valid: true, user: decoded });
         
     } catch (error) {
         res.status(401).json({ valid: false });

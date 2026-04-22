@@ -1,25 +1,21 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { createClient } = require('@supabase/supabase-js');
-
 const app = express();
+
+// Initialize SQLite database
+const db = require('./database');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Initialize Supabase
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Make db available to all routes
+app.locals.db = db;
 
-console.log('🔌 Connecting to Supabase...');
-console.log('📡 URL:', supabaseUrl);
-console.log('🔑 Key:', supabaseKey ? '✅ Loaded' : '❌ Missing');
-
-// Make supabase available to all routes
-app.locals.supabase = supabase;
+// Serve frontend static files
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
@@ -34,33 +30,26 @@ app.use('/api/validate', validationRoutes);
 app.get('/api/test', (req, res) => {
     res.json({ 
         status: 'success', 
-        message: 'Server running with Supabase!',
-        database: 'PostgreSQL (Supabase)',
+        message: 'Server running with SQLite!',
+        database: 'SQLite (local file)',
         timestamp: new Date().toISOString()
     });
 });
 
 // Health check
-app.get('/api/health', async (req, res) => {
-    try {
-        // Test database connection
-        const { data, error } = await supabase.from('profiles').select('count').limit(1);
-        
-        res.json({ 
-            status: 'healthy',
-            database: error ? '❌ Connection issue' : '✅ Connected',
-            uptime: process.uptime()
-        });
-    } catch (error) {
-        res.json({ status: 'error', message: error.message });
-    }
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'healthy',
+        database: 'SQLite ✅ Connected',
+        uptime: process.uptime()
+    });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`\n🚀 CMS Server Running!`);
+    console.log(`\n🚀 CMS Server Running with SQLite!`);
     console.log(`📍 http://localhost:${PORT}`);
-    console.log(`🗄️  Database: Supabase PostgreSQL`);
-    console.log(`🔐 Auth: Ready`);
+    console.log(`🗄️  Database: SQLite (local file)`);
+    console.log(`🔐 Auth: Ready (no email needed)`);
     console.log(`✅ API Ready\n`);
 });

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation Result – CMS</title>
+    <meta name="description" content="AI-powered message validation result with real-time weather and credibility scoring.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #22263a;
+            --border: #2e3350;
+            --purple: #7c6aff;
+            --purple2: #a78bfa;
+            --green: #22c55e;
+            --green-bg: #052814;
+            --green-border: #16a34a;
+            --red: #f87171;
+            --red-bg: #1f0a0a;
+            --red-border: #dc2626;
+            --yellow: #fbbf24;
+            --yellow-bg: #1f1507;
+            --yellow-border: #d97706;
+            --blue: #60a5fa;
+            --text: #e2e8f0;
+            --text2: #94a3b8;
+            --text3: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px 16px 60px;
+        }
+
+        /* ─── HEADER ─────────────────────────────── */
+        .page-header {
+            max-width: 780px;
+            margin: 0 auto 24px;
+            text-align: center;
+        }
+        .page-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple), var(--purple2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .page-header p { color: var(--text2); font-size: 0.9rem; margin-top: 4px; }
+
+        /* ─── CONTAINER ──────────────────────────── */
+        .container { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+        /* ─── CARDS ──────────────────────────────── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .card-inner { padding: 20px 24px; }
+
+        /* ─── VERDICT BANNER ─────────────────────── */
+        .verdict-banner {
+            padding: 28px 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .verdict-banner.pass { background: var(--green-bg); border-color: var(--green-border); }
+        .verdict-banner.fail { background: var(--red-bg);   border-color: var(--red-border); }
+        .verdict-icon { font-size: 3rem; line-height: 1; margin-bottom: 8px; }
+        .verdict-title { font-size: 1.4rem; font-weight: 800; }
+        .verdict-title.pass { color: var(--green); }
+        .verdict-title.fail { color: var(--red); }
+        .verdict-sub  { color: var(--text2); font-size: 0.88rem; margin-top: 4px; }
+
+        /* ─── SECTION LABEL ──────────────────────── */
+        .section-label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text3);
+            margin-bottom: 14px;
+        }
+        .section-label::before { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .section-label::after  { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        /* ─── PROGRESS BAR ───────────────────────── */
+        .score-row {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 10px;
+        }
+        .score-label { font-size: 0.85rem; color: var(--text2); white-space: nowrap; min-width: 130px; }
+        .bar-wrap { flex: 1; height: 12px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+        .bar-fill {
+            height: 100%; border-radius: 99px;
+            background: linear-gradient(90deg, var(--purple), var(--purple2));
+            transition: width 1.2s cubic-bezier(.22,1,.36,1);
+        }
+        .bar-fill.green  { background: linear-gradient(90deg, #16a34a, #22c55e); }
+        .bar-fill.yellow { background: linear-gradient(90deg, #d97706, #fbbf24); }
+        .bar-fill.red    { background: linear-gradient(90deg, #dc2626, #f87171); }
+        .score-pct { font-size: 0.95rem; font-weight: 700; min-width: 44px; text-align: right; }
+
+        /* ─── META ROW ───────────────────────────── */
+        .meta-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; margin: 14px 0;
+        }
+        .meta-item {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 14px;
+        }
+        .meta-item .mi-label { font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; }
+        .meta-item .mi-value { font-size: 1rem; font-weight: 700; margin-top: 2px; }
+
+        /* ─── EXPLANATION BOX ────────────────────── */
+        .explain-box {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px;
+            font-size: 0.88rem; line-height: 1.7;
+            color: var(--text);
+        }
+        .explain-box .label {
+            font-size: 0.72rem; color: var(--text3);
+            text-transform: uppercase; letter-spacing: 0.6px;
+            margin-bottom: 6px;
+        }
+        .suggestion-box {
+            margin-top: 10px;
+            background: rgba(124,106,255,0.08); border: 1px solid rgba(124,106,255,0.25);
+            border-radius: 8px; padding: 10px 14px;
+            font-size: 0.85rem; color: var(--purple2);
+        }
+        .suggestion-box .label { color: var(--purple); }
+
+        /* ─── CHECKS GRID ────────────────────────── */
+        .checks-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .check-chip {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px;
+            text-align: center; transition: border-color .2s;
+        }
+        .check-chip.pass { border-color: var(--green-border); background: var(--green-bg); }
+        .check-chip.fail { border-color: var(--red-border);   background: var(--red-bg); }
+        .check-chip .ci-icon { font-size: 1.5rem; }
+        .check-chip .ci-type { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin: 4px 0 2px; }
+        .check-chip .ci-status { font-size: 0.78rem; font-weight: 700; }
+        .check-chip.pass .ci-status { color: var(--green); }
+        .check-chip.fail .ci-status { color: var(--red); }
+        .check-chip .ci-value { font-size: 0.75rem; color: var(--text2); margin-top: 3px; font-style: italic; }
+
+        /* ─── WEATHER MISMATCH WARNING ───────────── */
+        .mismatch-row {
+            margin-top: 12px; padding: 10px 14px;
+            background: var(--red-bg); border: 1px solid var(--red-border);
+            border-radius: 8px; font-size: 0.83rem; color: var(--red);
+        }
+
+        /* ─── MESSAGE BOX ────────────────────────── */
+        .message-quote {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px 18px;
+            font-size: 0.95rem; font-style: italic;
+            color: var(--text); line-height: 1.6;
+        }
+
+        /* ─── WEATHER STRIP ──────────────────────── */
+        .weather-strip {
+            display: flex; flex-wrap: wrap; gap: 10px;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px;
+        }
+        .weather-tag {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 6px 12px;
+            font-size: 0.8rem; color: var(--text2);
+        }
+        .weather-tag span { color: var(--text); font-weight: 600; }
+
+        /* ─── ACTION BUTTONS ─────────────────────── */
+        .actions {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            justify-content: center; padding: 20px 24px;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 12px 22px; border-radius: 10px; border: none;
+            font-family: 'Inter', sans-serif; font-size: 0.88rem;
+            font-weight: 700; cursor: pointer; transition: all .2s;
+            text-decoration: none;
+        }
+        .btn-publish {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(34,197,94,0.35);
+        }
+        .btn-publish:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34,197,94,0.45); }
+        .btn-retry {
+            background: linear-gradient(135deg, var(--purple), var(--purple2));
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(124,106,255,0.3);
+        }
+        .btn-retry:hover { transform: translateY(-2px); }
+        .btn-dash {
+            background: var(--surface2); border: 1px solid var(--border);
+            color: var(--text2);
+        }
+        .btn-dash:hover { background: var(--border); color: var(--text); }
+
+        /* ─── LOADING ────────────────────────────── */
+        #loadingDiv {
+            text-align: center; padding: 60px 24px;
+        }
+        .spinner {
+            width: 52px; height: 52px; margin: 0 auto 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--purple);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: var(--text2); font-size: 0.95rem; }
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.4s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%   { content: ''; }
+            25%  { content: '.'; }
+            50%  { content: '..'; }
+            75%  { content: '...'; }
+        }
+
+        /* ─── ERROR ──────────────────────────────── */
+        .error-box {
+            background: var(--red-bg); border: 1px solid var(--red-border);
+            border-radius: 12px; padding: 20px; text-align: center;
+            color: var(--red);
+        }
+
+        /* ─── ACCURACY PANEL ─────────────────────── */
+        .accuracy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .acc-item {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 14px;
+        }
+        .acc-item .ai-label { font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; }
+        .acc-item .ai-val { font-size: 1.15rem; font-weight: 800; color: var(--purple2); margin-top: 2px; }
+
+        @media (max-width: 540px) {
+            .checks-grid { grid-template-columns: 1fr 1fr; }
+            .meta-grid, .accuracy-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<script src="config.js"></script>
+
+<div class="page-header">
+    <h1>🔍 VALIDATION RESULT</h1>
+    <p>AI · Rule-Based · Real-Time Weather</p>
+</div>
+
+<div class="container">
+    <div id="loadingDiv" class="card">
+        <div class="card-inner">
+            <div class="spinner"></div>
+            <p class="loading-text">🤖 AI is analysing your message<span class="loading-dots"></span></p>
+        </div>
+    </div>
+
+    <div id="resultDiv" style="display:none;"></div>
+</div>
+
+<script>
+/* ── Guard: prevent reload loop ─────────────────── */
+if (!sessionStorage.getItem('validationRunning')) {
+    sessionStorage.setItem('validationRunning', 'true');
+    runValidation();
+}
+
+/* ── Main validation call ───────────────────────── */
+function runValidation() {
+    const token    = localStorage.getItem('token');
+    const message  = localStorage.getItem('message');
+    const category = localStorage.getItem('category') || 'general';
+
+    if (!token || !message) {
+        alert('Missing data – redirecting to submit page.');
+        sessionStorage.removeItem('validationRunning');
+        window.location.href = 'submit-message.html';
+        return;
+    }
+
+    fetch(window.API_URL + '/api/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, category })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('loadingDiv').style.display = 'none';
+        const rd = document.getElementById('resultDiv');
+        rd.style.display = 'block';
+        rd.innerHTML = buildUI(data, message);
+        animateBars();
+        wirePublishBtn(data, message, token);
+        saveToDb(data, message, token);
+        localStorage.removeItem('message');
+        sessionStorage.removeItem('validationRunning');
+    })
+    .catch(err => {
+        document.getElementById('loadingDiv').style.display = 'none';
+        const rd = document.getElementById('resultDiv');
+        rd.style.display = 'block';
+        rd.innerHTML = `
+          <div class="card">
+            <div class="card-inner">
+              <div class="error-box">
+                <div style="font-size:2rem;margin-bottom:10px;">❌</div>
+                <strong>Connection Error</strong>
+                <p style="margin-top:6px;font-size:.85rem;">${err.message}</p>
+                <button onclick="location.href='submit-message.html'" class="btn btn-retry" style="margin-top:16px;">
+                  🔄 Try Again
+                </button>
+              </div>
+            </div>
+          </div>`;
+        sessionStorage.removeItem('validationRunning');
+    });
+}
+
+/* ── Build full UI HTML ─────────────────────────── */
+function buildUI(data, message) {
+    const passed     = data.passed;
+    const score      = data?.aiCheck?.confidence ?? 0;
+    const verdict    = getVerdict(score);
+    const explanation = data?.aiCheck?.explanation || 'No explanation available.';
+    const suggestion  = data?.aiCheck?.suggestions || '';
+
+    const kw  = data?.ruleCheck?.keywordCheck;
+    const loc = data?.ruleCheck?.locationCheck;
+    const tm  = data?.ruleCheck?.timeCheck;
+
+    const weather = data?.weatherCheck;
+    const hasMismatch = weather?.enabled && weather?.conflicts;
+
+    // Extract detected values
+    const kwVal  = extractKeyword(message);
+    const locVal = extractCity(message);
+    const tmVal  = extractTime(message);
+
+    // Score colour
+    const barClass = score >= 75 ? 'green' : score >= 60 ? 'yellow' : 'red';
+
+    // Weather section
+    let weatherHTML = '';
+    if (weather?.enabled) {
+        weatherHTML = `
+        <div class="card">
+          <div class="card-inner">
+            <div class="section-label">🌤 LIVE WEATHER DATA</div>
+            <div class="weather-strip">
+              <div class="weather-tag">📍 City: <span>${weather.location || '–'}</span></div>
+              <div class="weather-tag">☁️ Condition: <span>${capitalize(weather.realCondition || '–')}</span></div>
+              <div class="weather-tag">🌡 Temp: <span>${weather.realTemperature ?? '–'}°C</span></div>
+              <div class="weather-tag">📝 Desc: <span>${capitalize(weather.realDescription || '–')}</span></div>
+              <div class="weather-tag">✅ Match: <span>${weather.matchesMessage ? 'Yes' : hasMismatch ? 'No ⚠️' : 'N/A'}</span></div>
+            </div>
+            ${hasMismatch ? `<div class="mismatch-row">⚠️ ${weather.conflicts}</div>` : ''}
+          </div>
+        </div>`;
+    }
+
+    return `
+    <!-- 1. VERDICT BANNER -->
+    <div class="card">
+      <div class="verdict-banner ${passed ? 'pass' : 'fail'}">
+        <div class="verdict-icon">${passed ? '✅' : '❌'}</div>
+        <div class="verdict-title ${passed ? 'pass' : 'fail'}">
+          ${passed ? 'Message Verified!' : 'Validation Failed'}
+        </div>
+        <div class="verdict-sub">
+          ${passed ? 'Your message passed all validation checks' : 'Your message did not pass verification checks'}
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. AI ANALYSIS -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="section-label">🤖 AI ANALYSIS</div>
+
+        <!-- Progress bar -->
+        <div class="score-row">
+          <span class="score-label">Credibility Score</span>
+          <div class="bar-wrap">
+            <div class="bar-fill ${barClass}" id="mainBar" style="width:0%"></div>
+          </div>
+          <span class="score-pct" style="color:${barClass === 'green' ? 'var(--green)' : barClass === 'yellow' ? 'var(--yellow)' : 'var(--red)'}">
+            ${score}%
+          </span>
+        </div>
+
+        <!-- Meta -->
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="mi-label">📊 Score</div>
+            <div class="mi-value" style="color:${barClass === 'green' ? 'var(--green)' : barClass === 'yellow' ? 'var(--yellow)' : 'var(--red)'}">${score}% (${verdict})</div>
+          </div>
+          <div class="meta-item">
+            <div class="mi-label">🎯 Verdict</div>
+            <div class="mi-value">${passed ? '✅ Likely True' : '⚠️ May Be False'}</div>
+          </div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="explain-box">
+          <div class="label">📝 Explanation</div>
+          ${explanation}
+        </div>
+        ${suggestion ? `
+        <div class="suggestion-box">
+          <div class="label">💡 Suggestion</div>
+          "${suggestion}"
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- 3. VALIDATION CHECKS -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="section-label">📋 VALIDATION CHECKS</div>
+        <div class="checks-grid">
+          <div class="check-chip ${kw ? 'pass' : 'fail'}">
+            <div class="ci-icon">🔑</div>
+            <div class="ci-type">Keyword</div>
+            <div class="ci-status">${kw ? '✓ PASS' : '✗ FAIL'}</div>
+            ${kwVal ? `<div class="ci-value">"${kwVal}"</div>` : ''}
+          </div>
+          <div class="check-chip ${loc ? 'pass' : 'fail'}">
+            <div class="ci-icon">📍</div>
+            <div class="ci-type">Location</div>
+            <div class="ci-status">${loc ? '✓ PASS' : '✗ FAIL'}</div>
+            ${locVal ? `<div class="ci-value">"${locVal}"</div>` : ''}
+          </div>
+          <div class="check-chip ${tm ? 'pass' : 'fail'}">
+            <div class="ci-icon">⏰</div>
+            <div class="ci-type">Time</div>
+            <div class="ci-status">${tm ? '✓ PASS' : '✗ FAIL'}</div>
+            ${tmVal ? `<div class="ci-value">"${tmVal}"</div>` : ''}
+          </div>
+        </div>
+        ${hasMismatch ? `<div class="mismatch-row" style="margin-top:12px;">⚠️ Weather Mismatch: ${weather.conflicts}</div>` : ''}
+      </div>
+    </div>
+
+    <!-- 4. LIVE WEATHER -->
+    ${weatherHTML}
+
+    <!-- 5. YOUR MESSAGE -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="section-label">📝 YOUR MESSAGE</div>
+        <div class="message-quote">"${escHtml(message)}"</div>
+      </div>
+    </div>
+
+    <!-- 6. ACTIONS -->
+    <div class="card">
+      <div class="actions">
+        ${passed ? `<button id="publishBtn" class="btn btn-publish">📢 PUBLISH MESSAGE</button>` : ''}
+        <button onclick="location.href='submit-message.html'" class="btn btn-retry">🔄 TRY ANOTHER</button>
+        <button onclick="location.href='dashboard.html'" class="btn btn-dash">📊 DASHBOARD</button>
+      </div>
+    </div>
+    `;
+}
+
+/* ── Animate bars after render ──────────────────── */
+function animateBars() {
+    requestAnimationFrame(() => {
+        const bar = document.getElementById('mainBar');
+        if (bar) {
+            const pct = bar.closest('.score-row')?.querySelector('.score-pct')?.textContent?.trim() || '0%';
+            bar.style.width = pct;
+        }
+    });
+}
+
+/* ── Wire publish button ────────────────────────── */
+function wirePublishBtn(data, message, token) {
+    const btn = document.getElementById('publishBtn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        localStorage.setItem('message', message);
+        localStorage.setItem('lastValidatedMessage', message);
+        window.location.href = 'publish-status.html';
+    });
+}
+
+/* ── Save result to DB ──────────────────────────── */
+function saveToDb(data, message, token) {
+    const confidence = data?.aiCheck?.confidence || 0;
+    fetch(window.API_URL + '/api/messages/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            message,
+            passed: data.passed,
+            confidence,
+            explanation:   data?.aiCheck?.explanation,
+            suggestions:   data?.aiCheck?.suggestions,
+            keywordCheck:  data?.ruleCheck?.keywordCheck,
+            locationCheck: data?.ruleCheck?.locationCheck,
+            timeCheck:     data?.ruleCheck?.timeCheck,
+            category:      data.category || 'general'
+        })
+    }).catch(e => console.error('Save error:', e));
+}
+
+/* ── Helpers ────────────────────────────────────── */
+function getVerdict(score) {
+    if (score >= 90) return 'Excellent Credibility';
+    if (score >= 75) return 'High Credibility';
+    if (score >= 60) return 'Moderate Credibility';
+    if (score >= 40) return 'Low Credibility';
+    return 'Very Low Credibility';
+}
+
+function extractKeyword(msg) {
+    const kws = ['rain','storm','flood','haze','fog','clouds','cloudy','heat','cold','clear','sunny','drizzle','cyclone','thunder','lightning','warning','alert','emergency'];
+    const m = msg.toLowerCase();
+    return kws.find(k => m.includes(k)) || null;
+}
+
+function extractCity(msg) {
+    const cities = ['Mumbai','Delhi','Bangalore','Chennai','Kolkata','Pune','Hyderabad','Ahmedabad','Jaipur','Lucknow','Surat','Nagpur','Indore','Bhopal','Kanpur'];
+    const m = msg.toLowerCase();
+    return cities.find(c => m.includes(c.toLowerCase())) || null;
+}
+
+function extractTime(msg) {
+    const patterns = [
+        /\d{1,2}:\d{2}\s*(am|pm)/i,
+        /\d{1,2}\s*(am|pm)/i,
+        /\b(today|tomorrow|tonight|this evening|this morning|this afternoon|morning|evening|night|noon|midnight|now)\b/i
+    ];
+    for (const p of patterns) {
+        const m = msg.match(p);
+        if (m) return m[0];
+    }
+    return null;
+}
+
+function capitalize(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+}
+
+function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+
+</body>
+</html>

@@ -93,6 +93,7 @@
     </style>
 </head>
 <body>
+    <script src="config.js"></script>
     <div class="container">
         <div class="card">
             <div class="success-header">
@@ -121,7 +122,9 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         
-        const message = localStorage.getItem('message');
+        // Read from lastValidatedMessage (set by publish button in validate-simple.html)
+        // Fall back to 'message' key as backup
+        const message = localStorage.getItem('lastValidatedMessage') || localStorage.getItem('message');
         const category = localStorage.getItem('category');
         document.getElementById('messagePreview').innerHTML = `"${message || 'Your verified message'}"`;
         
@@ -155,6 +158,6 @@
             setTimeout(() => toast.remove(), 3000);
         }
     </script>
-    <script src="config.js"></script>
+    <!-- config.js already loaded at top of body -->
 </body>
 </html>

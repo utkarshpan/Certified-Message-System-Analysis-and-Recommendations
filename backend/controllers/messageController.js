@@ -1,17 +1,28 @@
-// Simple working message controller
+const db = require('../database');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = 'cms-demo-secret-key-2024';
+
+// Get user ID from token
+function getUserIdFromToken(token) {
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        return decoded.id;
+    } catch (error) {
+        return null;
+    }
+}
 
 async function saveMessage(req, res) {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        const supabase = req.app.locals.supabase;
         
         if (!token) {
             return res.status(401).json({ error: 'Not authenticated' });
         }
         
-        // Get user
-        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-        if (userError) {
+        const userId = getUserIdFromToken(token);
+        if (!userId) {
             return res.status(401).json({ error: 'Invalid token' });
         }
         
@@ -27,35 +38,32 @@ async function saveMessage(req, res) {
             category 
         } = req.body;
         
-        console.log('💾 Saving message for:', user.email);
+        console.log('💾 Saving message for user:', userId);
         
-        // Save to database
-        const { data, error } = await supabase
-            .from('messages')
-            .insert([{
-                user_id: user.id,
-                content: message,
-                category: category || 'general',
-                passed: passed || false,
-                confidence: confidence || 0,
-                explanation: explanation || '',
-                suggestions: suggestions || '',
-                keyword_check: keywordCheck || false,
-                location_check: locationCheck || false,
-                time_check: timeCheck || false,
-                validated_at: new Date().toISOString()
-            }])
-            .select();
-        
-        if (error) {
-            console.error('Database error:', error);
-            return res.status(500).json({ error: error.message });
-        }
-        
-        res.json({
-            success: true,
-            savedMessage: data[0]
-        });
+        db.run(
+            `INSERT INTO messages (
+                user_id, content, category, passed, confidence, 
+                explanation, suggestions, keyword_check, location_check, time_check
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [userId, message, category || 'general', passed ? 1 : 0, confidence, 
+             explanation || '', suggestions || '', keywordCheck ? 1 : 0, locationCheck ? 1 : 0, timeCheck ? 1 : 0],
+            function(err) {
+                if (err) {
+                    console.error('Database error:', err);
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                res.json({
+                    success: true,
+                    savedMessage: {
+                        id: this.lastID,
+                        content: message,
+                        passed: passed,
+                        confidence: confidence
+                    }
+                });
+            }
+        );
         
     } catch (error) {
         console.error('Save error:', error.message);
@@ -66,36 +74,35 @@ async function saveMessage(req, res) {
 async function getMessages(req, res) {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        const supabase = req.app.locals.supabase;
         
         if (!token) {
             return res.status(401).json({ error: 'Not authenticated' });
         }
         
-        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-        if (userError) {
+        const userId = getUserIdFromToken(token);
+        if (!userId) {
             return res.status(401).json({ error: 'Invalid token' });
         }
         
-        const { data, error } = await supabase
-            .from('messages')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(50);
-        
-        if (error) {
-            return res.status(500).json({ error: error.message });
-        }
-        
-        res.json({
-            success: true,
-            messages: data || [],
-            total: data?.length || 0
-        });
+        db.all(
+            `SELECT * FROM messages WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`,
+            [userId],
+            (err, messages) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                res.json({
+                    success: true,
+                    messages: messages || [],
+                    total: messages?.length || 0,
+                    verified: messages?.filter(m => m.passed === 1).length || 0
+                });
+            }
+        );
         
     } catch (error) {
-        console.error('Get error:', error.message);
+        console.error('Get messages error:', error.message);
         res.status(500).json({ error: error.message });
     }
 }
@@ -103,29 +110,28 @@ async function getMessages(req, res) {
 async function deleteMessage(req, res) {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        const supabase = req.app.locals.supabase;
         const { messageId } = req.params;
         
         if (!token) {
             return res.status(401).json({ error: 'Not authenticated' });
         }
         
-        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-        if (userError) {
+        const userId = getUserIdFromToken(token);
+        if (!userId) {
             return res.status(401).json({ error: 'Invalid token' });
         }
         
-        const { error } = await supabase
-            .from('messages')
-            .delete()
-            .eq('id', messageId)
-            .eq('user_id', user.id);
-        
-        if (error) {
-            return res.status(500).json({ error: error.message });
-        }
-        
-        res.json({ success: true });
+        db.run(
+            `DELETE FROM messages WHERE id = ? AND user_id = ?`,
+            [messageId, userId],
+            function(err) {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                res.json({ success: true, message: 'Message deleted' });
+            }
+        );
         
     } catch (error) {
         console.error('Delete error:', error.message);
@@ -136,34 +142,43 @@ async function deleteMessage(req, res) {
 async function getUserStats(req, res) {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        const supabase = req.app.locals.supabase;
         
         if (!token) {
             return res.status(401).json({ error: 'Not authenticated' });
         }
         
-        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-        if (userError) {
+        const userId = getUserIdFromToken(token);
+        if (!userId) {
             return res.status(401).json({ error: 'Invalid token' });
         }
         
-        const { data: messages } = await supabase
-            .from('messages')
-            .select('passed, confidence')
-            .eq('user_id', user.id);
-        
-        const total = messages?.length || 0;
-        const verified = messages?.filter(m => m.passed).length || 0;
-        
-        res.json({
-            success: true,
-            stats: {
-                totalMessages: total,
-                verifiedMessages: verified,
-                rejectedMessages: total - verified,
-                avgConfidence: 0
+        db.get(
+            `SELECT 
+                COUNT(*) as totalMessages,
+                SUM(CASE WHEN passed = 1 THEN 1 ELSE 0 END) as verifiedMessages,
+                AVG(confidence) as avgConfidence
+             FROM messages WHERE user_id = ?`,
+            [userId],
+            (err, stats) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                const total = stats?.totalMessages || 0;
+                const verified = stats?.verifiedMessages || 0;
+                
+                res.json({
+                    success: true,
+                    stats: {
+                        totalMessages: total,
+                        verifiedMessages: verified,
+                        rejectedMessages: total - verified,
+                        avgConfidence: Math.round(stats?.avgConfidence || 0),
+                        accuracy: total > 0 ? Math.round((verified / total) * 100) : 0
+                    }
+                });
             }
-        });
+        );
         
     } catch (error) {
         console.error('Stats error:', error.message);
@@ -171,10 +186,4 @@ async function getUserStats(req, res) {
     }
 }
 
-// Export all functions
-module.exports = {
-    saveMessage,
-    getMessages,
-    deleteMessage,
-    getUserStats
-};
+module.exports = { saveMessage, getMessages, deleteMessage, getUserStats };

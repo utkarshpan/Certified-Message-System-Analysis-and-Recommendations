@@ -174,9 +174,9 @@ async function validateMessageWithWeather(req, res) {
         
         // Step 1: Basic rule checks
         const ruleChecks = {
-            keywordCheck: /rain|storm|flood|alert|warning|heavy|emergency|weather|temperature|heat|cold/i.test(message),
-            locationCheck: /mumbai|delhi|bangalore|chennai|pune|kolkata|hyderabad|ahmedabad|jaipur/i.test(message),
-            timeCheck: /\d{1,2}\s*(am|pm)|today|tomorrow|evening|morning|night|now/i.test(message)
+            keywordCheck: /rain|rainfall|shower|drizzle|storm|flood|thunder|lightning|cyclone|typhoon|hurricane|haze|fog|foggy|mist|cloud|cloudy|overcast|clear|sunny|sunshine|heat|heatwave|cold|chilly|freezing|alert|warning|emergency|weather|temperature|humid|wind|snow/i.test(message),
+            locationCheck: /mumbai|delhi|bangalore|bengaluru|chennai|pune|kolkata|hyderabad|ahmedabad|jaipur|lucknow|surat|nagpur|indore|bhopal|kanpur/i.test(message),
+            timeCheck: /\d{1,2}:\d{2}\s*(am|pm)|\d{1,2}\s*(am|pm)|at\s+\d{1,2}|today|tomorrow|tonight|evening|morning|afternoon|night|noon|midnight|now/i.test(message)
         };
         
         // Step 2: Extract location and get real weather
