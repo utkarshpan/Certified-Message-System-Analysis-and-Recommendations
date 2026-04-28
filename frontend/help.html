@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & FAQ - CMS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-title {
+            color: white;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .page-title h1 {
+            font-size: 40px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .page-title p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .faq-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .faq-item {
+            border-bottom: 1px solid #eee;
+            padding: 0;
+        }
+        
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        
+        .faq-question {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background 0.3s;
+        }
+        
+        .faq-question:hover {
+            background: #f8f9fa;
+        }
+        
+        .faq-question-text {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        
+        .faq-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+            color: #667eea;
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #f8f9fa;
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+        }
+        
+        .faq-answer-text {
+            padding: 0 25px 20px 25px;
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        
+        .contact-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .contact-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .contact-section p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .contact-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tip-box {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .tip-title {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .code-sample {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🛡️ CMS Help & FAQ</div>
+            <div style="display: flex; gap: 20px;">
+                <a href="dashboard.html" style="color: #666; text-decoration: none;">Dashboard</a>
+                <a href="submit-message.html" style="color: #666; text-decoration: none;">Create Message</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-title">
+            <h1>❓ Help & Frequently Asked Questions</h1>
+            <p>Find answers to common questions about Certified Message System</p>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Search FAQs..." onkeyup="filterFAQs()">
+        </div>
+        
+        <!-- GETTING STARTED SECTION -->
+        <div class="faq-section">
+            <div class="section-title">🚀 Getting Started</div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">How do I create an account?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        1. Click "Sign Up" on the login page<br>
+                        2. Enter your name, email, and password (minimum 6 characters)<br>
+                        3. Click "Create Account"<br>
+                        4. You'll be redirected to the dashboard
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">How do I login?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        1. Go to the login page<br>
+                        2. Enter your email and password<br>
+                        3. Click "Login"<br>
+                        Your session will remain active for 7 days with the JWT token.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- VALIDATION SECTION -->
+        <div class="faq-section">
+            <div class="section-title">✅ Message Validation</div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">What is a message validation?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Message validation is the process of checking if your message is likely to be true or false using <span class="highlight">AI analysis</span>, <span class="highlight">rule-based checks</span>, and <span class="highlight">real-time data verification</span>. Our system uses Google Gemini AI to detect fake news patterns.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">How does the AI validation work?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Our AI uses Google Gemini to:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li>Detect fake news patterns and sensational language</li>
+                            <li>Check for chain message characteristics</li>
+                            <li>Analyze credibility based on specific details</li>
+                            <li>Provide confidence scores (0-100%)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">What is the weather verification?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        If your message mentions weather (rain, storm, temperature, etc.), our system uses real-time weather API to:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li>Get actual weather conditions for mentioned locations</li>
+                            <li>Compare with claims in your message</li>
+                            <li>Flag mismatches (e.g., claiming rain when it's clear)</li>
+                        </ul>
+                        <div class="tip-box">
+                            <div class="tip-title">💡 Tip:</div>
+                            Provide specific locations and times for accurate verification.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">What does the credibility score mean?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        The credibility score ranges from 0-100%:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li><span class="highlight">75-100%:</span> High confidence - Message appears credible</li>
+                            <li><span class="highlight">60-74%:</span> Medium confidence - Needs verification</li>
+                            <li><span class="highlight">Below 60%:</span> Low confidence - Likely contains false information</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FEATURES SECTION -->
+        <div class="faq-section">
+            <div class="section-title">✨ Features & Capabilities</div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">What are the validation checks?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Our system performs three checks:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li><strong>Keyword Check:</strong> Looks for specific weather/alert keywords</li>
+                            <li><strong>Location Check:</strong> Verifies Indian cities/locations are mentioned</li>
+                            <li><strong>Time Check:</strong> Ensures specific time/date is included</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">Can I share validated messages?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Yes! After validation, you can share your verified message to:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li>🐦 Twitter</li>
+                            <li>💬 WhatsApp</li>
+                            <li>📘 Facebook</li>
+                        </ul>
+                        Your message will be shared with credibility information.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TROUBLESHOOTING SECTION -->
+        <div class="faq-section">
+            <div class="section-title">🔧 Troubleshooting</div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">My validation is taking too long</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Validation typically takes 2-3 seconds. If it's taking longer:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li>Check your internet connection</li>
+                            <li>Ensure the backend server is running</li>
+                            <li>Try refreshing the page</li>
+                            <li>Clear your browser cache</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">I got a validation error</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Common errors and solutions:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li><strong>"Message required":</strong> Please enter a message before validating</li>
+                            <li><strong>Connection error:</strong> Check if backend is running (npm start)</li>
+                            <li><strong>Invalid token:</strong> Try logging out and logging back in</li>
+                            <li><strong>AI service unavailable:</strong> Fallback validation will be used</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">How do I view my validation history?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Go to your <span class="highlight">Dashboard</span> to see:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li>All messages you've validated</li>
+                            <li>Validation results (passed/failed)</li>
+                            <li>Confidence scores</li>
+                            <li>Timestamps</li>
+                        </ul>
+                        Your message history is saved for 6 months.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BEST PRACTICES SECTION -->
+        <div class="faq-section">
+            <div class="section-title">💡 Best Practices</div>
+            
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <span class="faq-question-text">Tips for better validation results</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        For best results:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li>✅ Be specific - Use exact locations, times, and dates</li>
+                            <li>✅ Include context - Add relevant details and keywords</li>
+                            <li>✅ Avoid sensational language - Don't use ALL CAPS or excessive punctuation!!!</li>
+                            <li>✅ Fact-check claims - Provide verifiable information</li>
+                            <li>❌ Don't forward blindly - Validate before sharing</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CONTACT SECTION -->
+        <div class="contact-section">
+            <h2>Still need help?</h2>
+            <p>Couldn't find the answer you're looking for? Contact our support team.</p>
+            <div class="contact-buttons">
+                <button class="btn btn-primary" onclick="alert('Email: support@cms.local')">📧 Email Support</button>
+                <button class="btn btn-outline" onclick="location.href='api-docs.html'">📚 API Docs</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleFAQ(element) {
+            element.classList.toggle('active');
+        }
+        
+        function filterFAQs() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question-text').textContent.toLowerCase();
+                const answer = item.querySelector('.faq-answer-text').textContent.toLowerCase();
+                
+                if (question.includes(searchText) || answer.includes(searchText)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

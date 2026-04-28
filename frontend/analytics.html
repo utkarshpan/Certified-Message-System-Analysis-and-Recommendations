@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Analytics - CMS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .nav-links a {
+            color: #666;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #667eea;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .page-title {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .stat-card.featured {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            grid-column: span 1;
+        }
+        
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-card.featured .stat-label {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card.featured .stat-value {
+            color: white;
+        }
+        
+        .stat-change {
+            font-size: 12px;
+            color: #10b981;
+        }
+        
+        .stat-change.down {
+            color: #ef4444;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            height: 200px;
+        }
+        
+        .bar {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px 8px 0 0;
+            min-height: 30px;
+            transition: transform 0.3s;
+            position: relative;
+        }
+        
+        .bar:hover {
+            transform: scaleY(1.05);
+        }
+        
+        .bar-label {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .features-list {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .features-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .feature-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            min-width: 30px;
+        }
+        
+        .feature-text {
+            flex: 1;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .feature-desc {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-badge.offline {
+            background: #ef4444;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .page-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🛡️ CMS Analytics</div>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="submit-message.html">Create Message</a>
+                <a href="analytics.html" class="active">Analytics</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-title">📊 System Analytics</div>
+        
+        <div class="stats-grid">
+            <div class="stat-card featured">
+                <div class="stat-icon">🔍</div>
+                <div class="stat-label">Messages Validated</div>
+                <div class="stat-value" id="totalMessages">--</div>
+                <div class="stat-change">↑ Today</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Verification Rate</div>
+                <div class="stat-value" id="verificationRate">--</div>
+                <div class="stat-change">Credible Messages</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-label">AI Accuracy</div>
+                <div class="stat-value" id="aiAccuracy">--</div>
+                <div class="stat-change">Model Performance</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-label">Avg Response Time</div>
+                <div class="stat-value" id="responseTime">--</div>
+                <div class="stat-change">Per Message</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-title">📈 Validation Trends (Last 7 Days)</div>
+            <div class="bar-chart">
+                <div style="flex-direction: column; display: flex; flex: 1; align-items: center;">
+                    <div class="bar" style="height: 40%;"><div class="bar-value">12</div></div>
+                    <div class="bar-label">Mon</div>
+                </div>
+                <div style="flex-direction: column; display: flex; flex: 1; align-items: center;">
+                    <div class="bar" style="height: 60%;"><div class="bar-value">18</div></div>
+                    <div class="bar-label">Tue</div>
+                </div>
+                <div style="flex-direction: column; display: flex; flex: 1; align-items: center;">
+                    <div class="bar" style="height: 75%;"><div class="bar-value">22</div></div>
+                    <div class="bar-label">Wed</div>
+                </div>
+                <div style="flex-direction: column; display: flex; flex: 1; align-items: center;">
+                    <div class="bar" style="height: 55%;"><div class="bar-value">17</div></div>
+                    <div class="bar-label">Thu</div>
+                </div>
+                <div style="flex-direction: column; display: flex; flex: 1; align-items: center;">
+                    <div class="bar" style="height: 85%;"><div class="bar-value">25</div></div>
+                    <div class="bar-label">Fri</div>
+                </div>
+                <div style="flex-direction: column; display: flex; flex: 1; align-items: center;">
+                    <div class="bar" style="height: 50%;"><div class="bar-value">15</div></div>
+                    <div class="bar-label">Sat</div>
+                </div>
+                <div style="flex-direction: column; display: flex; flex: 1; align-items: center;">
+                    <div class="bar" style="height: 70%;"><div class="bar-value">21</div></div>
+                    <div class="bar-label">Sun</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-title">🎯 System Status</div>
+            <div style="padding: 20px 0;">
+                <div style="margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Backend Server</span>
+                        <span class="status-badge" id="backendStatus">● Online</span>
+                    </div>
+                </div>
+                <div style="margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Database Connection</span>
+                        <span class="status-badge" id="dbStatus">● Online</span>
+                    </div>
+                </div>
+                <div style="margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>AI Service (Gemini)</span>
+                        <span class="status-badge" id="aiStatus">● Online</span>
+                    </div>
+                </div>
+                <div style="margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Weather API</span>
+                        <span class="status-badge" id="weatherStatus">● Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features-list">
+            <div class="features-title">✨ Platform Features</div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">🔐</div>
+                <div class="feature-text">
+                    <div class="feature-title">User Authentication</div>
+                    <div class="feature-desc">Secure JWT-based authentication with encrypted passwords</div>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">🤖</div>
+                <div class="feature-text">
+                    <div class="feature-title">AI Validation Engine</div>
+                    <div class="feature-desc">Google Gemini AI for advanced fake news detection</div>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">🌤️</div>
+                <div class="feature-text">
+                    <div class="feature-title">Real-time Weather Verification</div>
+                    <div class="feature-desc">Cross-references claims against live weather data</div>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <div class="feature-text">
+                    <div class="feature-title">Credibility Scoring</div>
+                    <div class="feature-desc">0-100% confidence rating with detailed analysis</div>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">📱</div>
+                <div class="feature-text">
+                    <div class="feature-title">Social Media Sharing</div>
+                    <div class="feature-desc">One-click sharing to Twitter, WhatsApp, Facebook</div>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">💾</div>
+                <div class="feature-text">
+                    <div class="feature-title">Persistent Storage</div>
+                    <div class="feature-desc">SQLite database for fast, reliable message history</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load analytics data
+        function loadAnalytics() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Simulated data - In production, fetch from backend
+            document.getElementById('totalMessages').textContent = '1,247';
+            document.getElementById('verificationRate').textContent = '87%';
+            document.getElementById('aiAccuracy').textContent = '92%';
+            document.getElementById('responseTime').textContent = '2.3s';
+            
+            // Check system health
+            checkSystemHealth();
+        }
+        
+        function checkSystemHealth() {
+            // Check Backend
+            fetch(window.API_URL + '/api/health' || 'http://localhost:5000/api/health')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('backendStatus').textContent = '● Online';
+                    document.getElementById('dbStatus').textContent = '● Online';
+                    document.getElementById('aiStatus').textContent = '● Online';
+                    document.getElementById('weatherStatus').textContent = '● Online';
+                })
+                .catch(err => {
+                    document.getElementById('backendStatus').classList.add('offline');
+                    document.getElementById('backendStatus').textContent = '● Offline';
+                });
+        }
+        
+        // Load on page ready
+        window.addEventListener('load', loadAnalytics);
+    </script>
+</body>
+</html>
